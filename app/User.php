@@ -9,6 +9,9 @@ class User extends Authenticatable
 {
     use Notifiable;
 
+    const PATH_REGISTRATION_FILE = 'app/public';
+    const NAME_REGISTRATION_FILE = 'UserRegistration.txt';
+
     /**
      * The attributes that are mass assignable.
      *

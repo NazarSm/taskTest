@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Logger\UserRegistrationLogger;
 use App\Http\Sender\EmailSender;
 use App\User;
 use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\UserRegistered;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Foundation\Auth\RegistersUsers;
 
 class RegisterController extends Controller
 {
+    use RegistersUsers;
+
     const FROM = 'nazarsommelier@gmail.com';
     /*
     |--------------------------------------------------------------------------
@@ -25,10 +26,8 @@ class RegisterController extends Controller
     | provide this functionality without requiring any additional code.
     |
     */
-
-    use RegistersUsers;
-
     public $emailSender;
+    public $userRegistrationLog;
     /**
      * Where to redirect users after registration.
      *
@@ -41,10 +40,11 @@ class RegisterController extends Controller
      *
      * @return void
      */
-    public function __construct(EmailSender $emailSender)
+    public function __construct(EmailSender $emailSender, UserRegistrationLogger $userRegistrationLog)
     {
         $this->middleware('guest');
         $this->emailSender = $emailSender;
+        $this->userRegistrationLog = $userRegistrationLog;
     }
 
     /**
@@ -84,21 +84,21 @@ class RegisterController extends Controller
 
         $from = self::FROM;
         $to = $user->email;
-        $subject = 'Підтвердження емейл';
-        $token = $user->token;
+        $subject = 'Підтвердження email';
+        $text = 'Будь ласка,перейдіть за посиланням :' . url("register/confirm/{$user->token}");
 
-        $this->emailSender->send($from, $to, $subject, $token);
-        /*Mail::to($user)->send(new UserRegistered($user));*/
+        $this->emailSender->send($from, $to, $subject, $text);
+        $this->userRegistrationLog->timeUserRegistration($user);
 
-        $request->session()->flash('message', 'На вашу адреу було выдправлене повідомлення для підвтердження');
+        $request->session()->flash('message', 'На вашу адреу було відправлене повідомлення для підвтердження');
         return back();
     }
 
     public function confirmEmail(Request $request, $token)
     {
-        User::whereToken($token)->firstOrFail()->confirmEmail();
-        $request->session()->flash('message', 'Email підтвердено. Зайдіть під свохм іменем');
 
+        User::whereToken($token)->firstOrFail()->confirmEmail();
+        $request->session()->flash('message', 'Email підтверджено. Зайдіть під своїм іменем');
         return redirect('login');
     }
 
