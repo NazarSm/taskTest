@@ -7,9 +7,9 @@ use Mailgun\Mailgun;
 
 class EmailSender
 {
-    public function send(string $from, string $to, string $subject, $token)
+    public function send(string $from, string $to, string $subject, string $text)
     {
-        $text = 'Будь ласка,перейдіть за посиланням :' . url("register/confirm/{$token}");
+
         $domain = env('MAILGUN_DOMAIN');
         $key = env('MAILGUN_SECRET');
 
