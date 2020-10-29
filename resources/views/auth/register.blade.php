@@ -8,6 +8,11 @@
                 <div class="card-header">{{ __('Register') }}</div>
 
                 <div class="card-body">
+
+                    @if (session()->has('message'))
+                        <div class="alert alert-info">{{ session('message') }}</div>
+                    @endif
+
                     <form method="POST" action="{{ route('register') }}" aria-label="{{ __('Register') }}">
                         @csrf
 
